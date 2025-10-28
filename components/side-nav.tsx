@@ -1,17 +1,18 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Home, Target, Calendar, Settings, Info, Sparkles } from "lucide-react"
+import { Home, Target, Calendar, Settings, Info, Sparkles, ShoppingCart } from "lucide-react"
 
 interface SideNavProps {
-  activeView: "dashboard" | "goals" | "history" | "settings" | "about"
-  onViewChange: (view: "dashboard" | "goals" | "history" | "settings" | "about") => void
+  activeView: "dashboard" | "goals" | "grocery" | "history" | "settings" | "about"
+  onViewChange: (view: "dashboard" | "goals" | "grocery" | "history" | "settings" | "about") => void
 }
 
 export default function SideNav({ activeView, onViewChange }: SideNavProps) {
   const navItems = [
     { id: "dashboard" as const, icon: Home, label: "Dashboard" },
     { id: "goals" as const, icon: Target, label: "Goals" },
+    { id: "grocery" as const, icon: ShoppingCart, label: "Grocery List" },
     { id: "history" as const, icon: Calendar, label: "History" },
     { id: "settings" as const, icon: Settings, label: "Settings" },
     { id: "about" as const, icon: Info, label: "About" },

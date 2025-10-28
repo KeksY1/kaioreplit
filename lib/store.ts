@@ -47,11 +47,13 @@ export interface UserProfile {
   gender?: string
   fitnessGoals?: string
   dietaryPreferences?: string
+  supplements?: string
   hasBeard?: boolean
   beardLength?: string
   beardStyle?: string
   beardCarePreferences?: string
   otherPreferences?: string
+  additionalInfo?: string
 }
 
 interface PlanStore {
@@ -64,6 +66,7 @@ interface PlanStore {
   lastGenerated: string | null
   history: PlanHistory[]
   completedChecklist: boolean[]
+  weeklyChecklistCompletion: { [dayName: string]: boolean[] }
   resetTime: "00:00" | "06:00"
 
   setUserProfile: (profile: UserProfile) => void
@@ -77,6 +80,7 @@ interface PlanStore {
   toggleGroceryItem: (id: string) => void
   setLastGenerated: (date: string) => void
   toggleChecklistItem: (index: number) => void
+  toggleWeeklyChecklistItem: (dayName: string, index: number) => void
   addToHistory: (plan: DailyPlan, completed: boolean[]) => void
   checkAndRegeneratePlan: () => boolean
   setResetTime: (time: "00:00" | "06:00") => void
@@ -95,6 +99,7 @@ export const usePlanStore = create<PlanStore>()(
       lastGenerated: null,
       history: [],
       completedChecklist: [],
+      weeklyChecklistCompletion: {},
       resetTime: "06:00",
 
       setUserProfile: (profile) => set({ userProfile: profile }),
@@ -107,7 +112,17 @@ export const usePlanStore = create<PlanStore>()(
           completedChecklist: new Array(plan.checklist.length).fill(false),
         }),
 
-      setWeeklyPlan: (plan) => set({ weeklyPlan: plan }),
+      setWeeklyPlan: (plan) => {
+        const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        const newCompletion: { [key: string]: boolean[] } = {}
+        days.forEach((day) => {
+          const dayPlan = plan.days[day] as DailyPlan | undefined
+          if (dayPlan) {
+            newCompletion[day] = new Array(dayPlan.checklist.length).fill(false)
+          }
+        })
+        set({ weeklyPlan: plan, weeklyChecklistCompletion: newCompletion })
+      },
 
       setCurrentDayIndex: (index) => set({ currentDayIndex: index }),
 
@@ -137,6 +152,18 @@ export const usePlanStore = create<PlanStore>()(
           const newChecklist = [...state.completedChecklist]
           newChecklist[index] = !newChecklist[index]
           return { completedChecklist: newChecklist }
+        }),
+
+      toggleWeeklyChecklistItem: (dayName, index) =>
+        set((state) => {
+          const dayCompletion = [...(state.weeklyChecklistCompletion[dayName] || [])]
+          dayCompletion[index] = !dayCompletion[index]
+          return {
+            weeklyChecklistCompletion: {
+              ...state.weeklyChecklistCompletion,
+              [dayName]: dayCompletion,
+            },
+          }
         }),
 
       addToHistory: (plan, completed) =>
@@ -191,6 +218,7 @@ export const usePlanStore = create<PlanStore>()(
           lastGenerated: null,
           history: [],
           completedChecklist: [],
+          weeklyChecklistCompletion: {},
         }),
     }),
     {

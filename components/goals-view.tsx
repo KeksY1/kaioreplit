@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
-import { generateDailyPlan } from "@/app/actions/generate-plan"
+import { generateWeeklyPlan } from "@/app/actions/generate-plan"
 
 interface QuestionnaireData {
   age?: string
@@ -20,6 +20,7 @@ interface QuestionnaireData {
   fitnessGoals?: string
   workoutFrequency?: string
   dietaryPreferences?: string
+  supplements?: string
   hasBeard?: boolean
   beardLength?: string
   beardStyle?: string
@@ -27,6 +28,7 @@ interface QuestionnaireData {
   wakeTime?: string
   sleepTime?: string
   lifestyleGoals?: string
+  additionalInfo?: string
 }
 
 const questions = [
@@ -73,6 +75,12 @@ const questions = [
     type: "textarea" as const,
   },
   {
+    id: "supplements",
+    question: "Do you take any supplements?",
+    placeholder: "e.g., Protein powder, creatine, multivitamin, fish oil...",
+    type: "textarea" as const,
+  },
+  {
     id: "hasBeard",
     question: "Do you have a beard?",
     type: "boolean" as const,
@@ -116,10 +124,17 @@ const questions = [
     placeholder: "e.g., Read more, meditate daily, improve morning routine...",
     type: "textarea" as const,
   },
+  {
+    id: "additionalInfo",
+    question: "Anything else you'd like to add?",
+    placeholder: "e.g., Specific preferences, upcoming events, things I should know...",
+    type: "textarea" as const,
+  },
 ]
 
 export default function GoalsView() {
-  const { goals, setGoals, currentPlan, setCurrentPlan, setLastGenerated } = usePlanStore()
+  const { goals, setGoals, weeklyPlan, setWeeklyPlan, setGroceryList, setLastGenerated, setCurrentDayIndex } =
+    usePlanStore()
   const [currentStep, setCurrentStep] = useState(0)
   const [questionnaireData, setQuestionnaireData] = useState<QuestionnaireData>(() => {
     // Try to parse existing goals if they exist
@@ -178,14 +193,33 @@ export default function GoalsView() {
     setGoals(JSON.stringify(questionnaireData))
 
     try {
-      const result = await generateDailyPlan(formattedGoals)
+      const result = await generateWeeklyPlan(formattedGoals)
 
       if (result.success && result.plan) {
-        setCurrentPlan(result.plan)
+        const { groceryList, ...weekDays } = result.plan
+        const startDate = new Date()
+        startDate.setDate(startDate.getDate() - ((startDate.getDay() + 6) % 7))
+
+        setWeeklyPlan({
+          startDate: startDate.toISOString(),
+          days: weekDays as any,
+        })
+
+        const groceryItems = groceryList.map((item: any, index: number) => ({
+          id: `grocery-${index}`,
+          name: item.name,
+          category: item.category,
+          purchased: false,
+        }))
+        setGroceryList(groceryItems)
+
+        const today = new Date().getDay()
+        setCurrentDayIndex(today === 0 ? 6 : today - 1)
+
         setLastGenerated(new Date().toISOString())
         toast({
-          title: "Plan generated!",
-          description: "Your personalized daily plan is ready.",
+          title: "Weekly plan generated!",
+          description: "Your personalized weekly plan is ready.",
         })
       } else {
         toast({
@@ -345,7 +379,7 @@ export default function GoalsView() {
       </div>
 
       {/* Current Plan Status */}
-      {currentPlan && (
+      {weeklyPlan && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-6">
           <Card className="p-6 bg-primary/5 border-primary/20">
             <div className="flex items-center gap-3">
@@ -353,9 +387,9 @@ export default function GoalsView() {
                 <Check className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h3 className="font-semibold text-foreground">Active Plan</h3>
+                <h3 className="font-semibold text-foreground">Active Weekly Plan</h3>
                 <p className="text-sm text-muted-foreground">
-                  You have an active daily plan. Complete the questionnaire to regenerate it.
+                  You have an active weekly plan. Complete the questionnaire to regenerate it.
                 </p>
               </div>
             </div>
