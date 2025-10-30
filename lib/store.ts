@@ -156,7 +156,7 @@ export const usePlanStore = create<PlanStore>()(
       updateGroceryItemCategory: (id, category) =>
         set((state) => ({
           groceryList: state.groceryList.map((item) =>
-            item.id === id ? { ...item, category } : item,
+            item.id === id ? { ...item, category: category.trim().toLowerCase() } : item,
           ),
         })),
 

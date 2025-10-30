@@ -5,18 +5,102 @@ import { usePlanStore } from "@/lib/store"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
-import { ShoppingCart, CheckCircle2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { ShoppingCart, CheckCircle2, Pencil, Trash2 } from "lucide-react"
+import { useState } from "react"
 
-const categoryColors = {
+const categoryColors: Record<string, string> = {
   produce: "bg-green-500/10 text-green-700 dark:text-green-400",
   protein: "bg-red-500/10 text-red-700 dark:text-red-400",
   dairy: "bg-blue-500/10 text-blue-700 dark:text-blue-400",
   grains: "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400",
+  supplement: "bg-purple-500/10 text-purple-700 dark:text-purple-400",
+  supplements: "bg-purple-500/10 text-purple-700 dark:text-purple-400",
+  snacks: "bg-orange-500/10 text-orange-700 dark:text-orange-400",
+  beverages: "bg-cyan-500/10 text-cyan-700 dark:text-cyan-400",
   other: "bg-gray-500/10 text-gray-700 dark:text-gray-400",
 }
 
+function getCategoryColor(category: string): string {
+  return categoryColors[category.toLowerCase()] || "bg-indigo-500/10 text-indigo-700 dark:text-indigo-400"
+}
+
+function EditItemDialog({ item }: { item: any }) {
+  const { updateGroceryItemName, updateGroceryItemCategory } = usePlanStore()
+  const [open, setOpen] = useState(false)
+  const [name, setName] = useState(item.name)
+  const [category, setCategory] = useState(item.category)
+
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen)
+    if (newOpen) {
+      setName(item.name)
+      setCategory(item.category)
+    }
+  }
+
+  const handleSave = () => {
+    if (name.trim()) {
+      updateGroceryItemName(item.id, name.trim())
+    }
+    if (category.trim()) {
+      updateGroceryItemCategory(item.id, category.trim())
+    }
+    setOpen(false)
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-8 w-8">
+          <Pencil className="h-4 w-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Edit Item</DialogTitle>
+          <DialogDescription>Update the item name or category</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 pt-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Item Name</Label>
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter item name"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="category">Category</Label>
+            <Input
+              id="category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              placeholder="e.g., produce, protein, snacks"
+            />
+          </div>
+          <Button onClick={handleSave} className="w-full">
+            Save Changes
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 export default function GroceryListView() {
-  const { groceryList, toggleGroceryItem } = usePlanStore()
+  const { groceryList, toggleGroceryItem, deleteGroceryItem } = usePlanStore()
 
   const groupedItems = groceryList.reduce(
     (acc, item) => {
@@ -81,7 +165,7 @@ export default function GroceryListView() {
             {Object.entries(groupedItems).map(([category, items]) => (
               <div key={category}>
                 <h3 className="font-semibold text-lg mb-3 capitalize flex items-center gap-2">
-                  <Badge className={categoryColors[category as keyof typeof categoryColors]}>{category}</Badge>
+                  <Badge className={getCategoryColor(category)}>{category}</Badge>
                   <span className="text-sm text-muted-foreground">
                     ({items.filter((i) => i.purchased).length}/{items.length})
                   </span>
@@ -106,6 +190,17 @@ export default function GroceryListView() {
                         {item.name}
                       </span>
                       {item.purchased && <CheckCircle2 className="h-5 w-5 text-green-500" />}
+                      <div className="flex items-center gap-1">
+                        <EditItemDialog item={item} />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:text-destructive"
+                          onClick={() => deleteGroceryItem(item.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </motion.div>
                   ))}
                 </div>
