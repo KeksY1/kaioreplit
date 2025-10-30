@@ -78,6 +78,9 @@ interface PlanStore {
   previousDay: () => void
   setGroceryList: (items: GroceryItem[]) => void
   toggleGroceryItem: (id: string) => void
+  deleteGroceryItem: (id: string) => void
+  updateGroceryItemCategory: (id: string, category: string) => void
+  updateGroceryItemName: (id: string, name: string) => void
   setLastGenerated: (date: string) => void
   toggleChecklistItem: (index: number) => void
   toggleWeeklyChecklistItem: (dayName: string, index: number) => void
@@ -142,6 +145,25 @@ export const usePlanStore = create<PlanStore>()(
         set((state) => ({
           groceryList: state.groceryList.map((item) =>
             item.id === id ? { ...item, purchased: !item.purchased } : item,
+          ),
+        })),
+
+      deleteGroceryItem: (id) =>
+        set((state) => ({
+          groceryList: state.groceryList.filter((item) => item.id !== id),
+        })),
+
+      updateGroceryItemCategory: (id, category) =>
+        set((state) => ({
+          groceryList: state.groceryList.map((item) =>
+            item.id === id ? { ...item, category } : item,
+          ),
+        })),
+
+      updateGroceryItemName: (id, name) =>
+        set((state) => ({
+          groceryList: state.groceryList.map((item) =>
+            item.id === id ? { ...item, name } : item,
           ),
         })),
 
