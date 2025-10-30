@@ -30,7 +30,7 @@ export interface WeeklyPlan {
 export interface GroceryItem {
   id: string
   name: string
-  category: "produce" | "protein" | "dairy" | "grains" | "other"
+  category: "produce" | "protein" | "dairy" | "grains" | "supplement" | "other"
   purchased: boolean
 }
 

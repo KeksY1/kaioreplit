@@ -30,7 +30,7 @@ const WeeklyPlanSchema = z.object({
   groceryList: z.array(
     z.object({
       name: z.string(),
-      category: z.enum(["produce", "protein", "dairy", "grains", "other"]),
+      category: z.enum(["produce", "protein", "dairy", "grains", "supplement", "other"]),
     }),
   ),
 })
