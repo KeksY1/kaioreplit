@@ -23,9 +23,12 @@ Kaio is a Next.js-based AI-powered life coach application that generates persona
 
 **Grocery List Enhancements**
 - Automatically generated from all meals across the entire week
-- Categorized by type (produce, protein, dairy, grains, other)
+- Dynamic category system: AI can create any category type (snacks, beverages, supplements, etc.)
+- Predefined category colors for common types (produce, protein, dairy, grains, supplements, snacks, beverages) with fallback colors for new categories
 - Individual items can be checked off as purchased
 - Progress tracking shows percentage of items acquired
+- Full item management: users can edit item names, change categories, or delete items
+- Categories are normalized (lowercased and trimmed) to prevent duplicates from casing differences
 
 ## User Preferences
 
@@ -79,7 +82,7 @@ Preferred communication style: Simple, everyday language.
 - `WeeklyPlan`: Contains 7 daily plans (Monday-Sunday) with start date tracking
 - `DailyPlan`: Wake time, hydration goals, meals, workout, checklist items
 - `Meal`: Name, calories, protein, details
-- `GroceryItem`: Name, category, purchased status
+- `GroceryItem`: Name, category (string - any value), purchased status
 - `UserProfile`: Comprehensive questionnaire data including fitness goals, dietary preferences, supplements, physical stats, beard care preferences, schedule, and additional context
 - `WeeklyChecklistCompletion`: Map of day names to boolean arrays for independent per-day progress tracking
 
